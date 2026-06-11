@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MovieMan 2019 — Discover Cinema</title>
+  <meta name="description" content="Discover movies, explore global cinema, track your watchlist, and find films by mood, decade, or country." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── AUTH UI ADDITIONS FOR GLASSMORPHISM COMPLEX ────────────────── */
+    .auth-nav-btn {
+      padding: 8px 16px;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border-radius: 8px;
+      transition: all var(--transition);
+    }
+    .auth-nav-btn:hover {
+      background: #c1121f;
+      transform: translateY(-1px);
+    }
+    .user-profile-menu {
+      position: relative;
+      display: inline-block;
+    }
+    .user-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--bg2);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      min-width: 160px;
+      box-shadow: var(--shadow);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1100;
+    }
+    .user-dropdown.open { display: flex; }
+    .user-dropdown button {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.875rem;
+      color: var(--text2);
+      transition: all var(--transition);
+      width: 100%;
+    }
+    .user-dropdown button:hover {
+      background: var(--glass);
+      color: var(--text);
+    }
+    .auth-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .auth-overlay.open { display: flex; }
+    .auth-modal {
+      background: var(--bg2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      width: 100%; max-width: 400px;
+      padding: 32px;
+      position: relative;
+      box-shadow: var(--shadow);
+      animation: popIn 0.3s ease;
+    }
+    .auth-tabs {
+      display: flex; gap: 16px; margin-bottom: 24px;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 8px;
+    }
+    .atab {
+      font-size: 1.2rem; font-weight: 800; color: var(--text3);
+      cursor: pointer; transition: color var(--transition);
+    }
+    .atab.active { color: var(--text); }
+    .auth-form { display: none; flex-direction: column; gap: 16px; }
+    .auth-form.active { display: flex; }
+    .auth-group { display: flex; flex-direction: column; gap: 6px; }
+    .auth-group label { font-size: 0.8rem; font-weight: 600; color: var(--text2); }
+    .auth-group input {
+      padding: 12px 16px; background: var(--bg3);
+      border: 1px solid var(--glass-border); border-radius: 8px;
+      color: var(--text); outline: none; transition: border-color var(--transition);
+    }
+    .auth-group input:focus { border-color: var(--accent); }
+    .btn-auth-submit {
+      padding: 14px; background: var(--accent); color: white;
+      font-weight: 700; border-radius: 8px; margin-top: 8px;
+      transition: all var(--transition);
+    }
+    .btn-auth-submit:hover { background: #c1121f; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#" onclick="showSection('home')">
+      <span class="logo-icon">🎬</span>
+      <span class="logo-text">MovieMan <em>2019</em></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#" onclick="showSection('home')" data-section="home">Home</a></li>
+      <li><a href="#" onclick="showSection('discover')" data-section="discover">Discover</a></li>
+      <li><a href="#" onclick="showSection('cinemap')" data-section="cinemap">CineMap</a></li>
+      <li><a href="#" onclick="showSection('mood')" data-section="mood">Mood</a></li>
+      <li><a href="#" onclick="showSection('timeline')" data-section="timeline">Timeline</a></li>
+      <li><a href="#" onclick="showSection('battle')" data-section="battle">Battle</a></li>
+      <li><a href="#" onclick="showSection('watchlist')" data-section="watchlist">Watchlist</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-search" onclick="openSearch()" title="Search (Ctrl+K)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="search-hint">Ctrl+K</span>
+      </button>
+
+      <div id="authNavSection">
+        <button class="auth-nav-btn" onclick="openAuthModal('login')">Sign In</button>
+      </div>
+
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="auth-overlay" id="authOverlay" onclick="closeAuthIfBackdrop(event)">
+  <div class="auth-modal">
+    <button class="modal-close" onclick="closeAuthModal()" style="position: absolute; top: 16px; right: 16px; margin:0;">✕</button>
+    <div class="auth-tabs">
+      <span class="atab active" id="tab-login" onclick="switchAuthTab('login')">Login</span>
+      <span class="atab" id="tab-register" onclick="switchAuthTab('register')">Register</span>
+    </div>
+    
+    <form class="auth-form active" id="form-login" onsubmit="handleAuthSubmit(event, 'login')">
+      <div class="auth-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" required autocomplete="username" placeholder="Enter username..." />
+      </div>
+      <div class="auth-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" required autocomplete="current-password" placeholder="Enter password..." />
+      </div>
+      <button type="submit" class="btn-auth-submit">Sign In</button>
+    </form>
+
+    <form class="auth-form" id="form-register" onsubmit="handleAuthSubmit(event, 'register')">
+      <div class="auth-group">
+        <label>Username</label>
+        <input type="text" id="regUser" required autocomplete="username" placeholder="Choose a username..." />
+      </div>
+      <div class="auth-group">
+        <label>Email Address</label>
+        <input type="email" id="regEmail" required autocomplete="email" placeholder="Enter your email..." />
+      </div>
+      <div class="auth-group">
+        <label>Password</label>
+        <input type="password" id="regPass" required autocomplete="new-password" placeholder="Create robust password..." />
+      </div>
+      <button type="submit" class="btn-auth-submit">Create Account</button>
+    </form>
+  </div>
+</div>
+
+<div class="search-overlay" id="searchOverlay" onclick="closeSearchIfBackdrop(event)">
+  <div class="search-modal">
+    <div class="search-input-wrap">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search movies, shows, anime..." autocomplete="off" />
+      <button class="search-close" onclick="closeSearch()">ESC</button>
+    </div>
+    <div class="search-tabs">
+      <button class="stab active" data-type="movie" onclick="setSearchType('movie',this)">Movies</button>
+      <button class="stab" data-type="tv" onclick="setSearchType('tv',this)">TV Shows</button>
+      <button class="stab" data-type="anime" onclick="setSearchType('anime',this)">Anime</button>
+    </div>
+    <div class="search-results" id="searchResults">
+      <div class="search-empty">Start typing to search...</div>
+    </div>
+  </div>
+</div>
+
+<section class="section active" id="section-home">
+
+  <div class="hero" id="hero">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content" id="heroContent">
+      <div class="hero-badge" id="heroBadge">🔥 Trending Now</div>
+      <h1 class="hero-title" id="heroTitle">Loading...</h1>
+      <p class="hero-tagline" id="heroTagline"></p>
+      <div class="hero-meta" id="heroMeta"></div>
+      <div class="hero-actions" id="heroActions"></div>
+    </div>
+    <div class="hero-nav">
+      <button class="hero-btn" onclick="prevHero()">&#8592;</button>
+      <div class="hero-dots" id="heroDots"></div>
+      <button class="hero-btn" onclick="nextHero()">&#8594;</button>
+    </div>
+    <div class="hero-progress" id="heroProgress"></div>
+  </div>
+
+  <div class="content-area">
+
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">🔥 Trending This Week</h2>
+        <a href="#" class="see-all" onclick="showSection('discover')">See All</a>
+      </div>
+      <div class="movie-row" id="trendingRow">
+        <div class="skeleton-row"></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">🎬 Now Playing</h2>
+      </div>
+      <div class="movie-row" id="nowPlayingRow">
+        <div class="skeleton-row"></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">⭐ Top Rated All Time</h2>
+      </div>
+      <div class="movie-row" id="topRatedRow">
+        <div class="skeleton-row"></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">📅 Coming Soon</h2>
+      </div>
+      <div class="movie-row" id="upcomingRow">
+        <div class="skeleton-row"></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">🌸 Anime Picks</h2>
+      </div>
+      <div class="movie-row" id="animeRow">
+        <div class="skeleton-row"></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">🌍 Global Cinema</h2>
+      </div>
+      <div class="global-tabs" id="globalTabs">
+        <button class="gtab active" data-lang="hi" onclick="loadGlobalTab('hi',this)">🇮🇳 Hindi</button>
+        <button class="gtab" data-lang="ja" onclick="loadGlobalTab('ja',this)">🇯🇵 Japanese</button>
+        <button class="gtab" data-lang="ko" onclick="loadGlobalTab('ko',this)">🇰🇷 Korean</button>
+        <button class="gtab" data-lang="ta" onclick="loadGlobalTab('ta',this)">🇮🇳 Tamil</button>
+        <button class="gtab" data-lang="fr" onclick="loadGlobalTab('fr',this)">🇫🇷 French</button>
+        <button class="gtab" data-lang="es" onclick="loadGlobalTab('es',this)">🇪🇸 Spanish</button>
+        <button class="gtab" data-lang="tr" onclick="loadGlobalTab('tr',this)">🇹🇷 Turkish</button>
+        <button class="gtab" data-lang="zh" onclick="loadGlobalTab('zh',this)">🇨🇳 Chinese</button>
+      </div>
+      <div class="movie-row" id="globalRow">
+        <div class="skeleton-row"></div>
+      </div>
+    </div>
+
+    <div class="section-block dna-promo">
+      <div class="dna-promo-inner">
+        <div class="dna-promo-text">
+          <h2>🧬 Movie DNA</h2>
+          <p>Reveal any film's cinematic fingerprint across 7 dimensions: Drama, Action, Comedy, Romance, Thriller, Sci-Fi, and Horror.</p>
+        </div>
+        <div class="dna-promo-search">
+          <input type="text" id="dnaQuickInput" placeholder="Enter a movie name..." onkeydown="if(event.key==='Enter')quickDNA()" />
+          <button onclick="quickDNA()">Analyze</button>
+        </div>
+      </div>
+    </div>
+
+  </div></section>
+
+<section class="section" id="section-discover">
+  <div class="content-area">
+    <div class="page-header">
+      <h1>🔍 Discover Movies</h1>
+      <p>Filter by genre, language, year, and more</p>
+    </div>
+    <div class="discover-filters">
+      <div class="filter-group">
+        <label>Genre</label>
+        <select id="filterGenre" onchange="applyDiscoverFilters()">
+          <option value="">All Genres</option>
+          <option value="28">Action</option>
+          <option value="12">Adventure</option>
+          <option value="16">Animation</option>
+          <option value="35">Comedy</option>
+          <option value="80">Crime</option>
+          <option value="99">Documentary</option>
+          <option value="18">Drama</option>
+          <option value="10751">Family</option>
+          <option value="14">Fantasy</option>
+          <option value="36">History</option>
+          <option value="27">Horror</option>
+          <option value="10402">Music</option>
+          <option value="9648">Mystery</option>
+          <option value="10749">Romance</option>
+          <option value="878">Sci-Fi</option>
+          <option value="53">Thriller</option>
+          <option value="10752">War</option>
+          <option value="37">Western</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Language</label>
+        <select id="filterLang" onchange="applyDiscoverFilters()">
+          <option value="">All Languages</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="ja">Japanese</option>
+          <option value="ko">Korean</option>
+          <option value="ta">Tamil</option>
+          <option value="te">Telugu</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+          <option value="de">German</option>
+          <option value="it">Italian</option>
+          <option value="pt">Portuguese</option>
+          <option value="ru">Russian</option>
+          <option value="zh">Chinese</option>
+          <option value="tr">Turkish</option>
+          <option value="ar">Arabic</option>
+          <option value="th">Thai</option>
+          <option value="id">Indonesian</option>
+          <option value="pl">Polish</option>
+          <option value="sv">Swedish</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Year</label>
+        <select id="filterYear" onchange="applyDiscoverFilters()">
+          <option value="">All Years</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Sort By</label>
+        <select id="filterSort" onchange="applyDiscoverFilters()">
+          <option value="popularity.desc">Most Popular</option>
+          <option value="vote_average.desc">Highest Rated</option>
+          <option value="release_date.desc">Newest First</option>
+          <option value="release_date.asc">Oldest First</option>
+          <option value="revenue.desc">Highest Grossing</option>
+        </select>
+      </div>
+      <button class="btn-reset" onclick="resetDiscoverFilters()">Reset</button>
+    </div>
+    <div class="movie-grid" id="discoverGrid"></div>
+    <div class="load-more-wrap">
+      <button class="btn-load-more" id="discoverLoadMore" onclick="loadMoreDiscover()">Load More</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="section-cinemap">
+  <div class="content-area">
+    <div class="page-header">
+      <h1>🗺️ CineMap</h1>
+      <p>Explore cinema from 16 countries around the world</p>
+    </div>
+    <div class="cinemap-grid">
+      <button class="country-card" data-country="US" data-lang="en" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇺🇸</span>
+        <span class="country-name">United States</span>
+      </button>
+      <button class="country-card" data-country="GB" data-lang="en" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇬🇧</span>
+        <span class="country-name">United Kingdom</span>
+      </button>
+      <button class="country-card" data-country="FR" data-lang="fr" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇫🇷</span>
+        <span class="country-name">France</span>
+      </button>
+      <button class="country-card" data-country="DE" data-lang="de" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇩🇪</span>
+        <span class="country-name">Germany</span>
+      </button>
+      <button class="country-card" data-country="IT" data-lang="it" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇮🇹</span>
+        <span class="country-name">Italy</span>
+      </button>
+      <button class="country-card" data-country="ES" data-lang="es" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇪🇸</span>
+        <span class="country-name">Spain</span>
+      </button>
+      <button class="country-card" data-country="JP" data-lang="ja" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇯🇵</span>
+        <span class="country-name">Japan</span>
+      </button>
+      <button class="country-card" data-country="KR" data-lang="ko" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇰🇷</span>
+        <span class="country-name">South Korea</span>
+      </button>
+      <button class="country-card" data-country="CN" data-lang="zh" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇨🇳</span>
+        <span class="country-name">China</span>
+      </button>
+      <button class="country-card" data-country="IN" data-lang="hi" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇮🇳</span>
+        <span class="country-name">India</span>
+      </button>
+      <button class="country-card" data-country="MX" data-lang="es" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇲🇽</span>
+        <span class="country-name">Mexico</span>
+      </button>
+      <button class="country-card" data-country="BR" data-lang="pt" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇧🇷</span>
+        <span class="country-name">Brazil</span>
+      </button>
+      <button class="country-card" data-country="RU" data-lang="ru" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇷🇺</span>
+        <span class="country-name">Russia</span>
+      </button>
+      <button class="country-card" data-country="TR" data-lang="tr" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇹🇷</span>
+        <span class="country-name">Turkey</span>
+      </button>
+      <button class="country-card" data-country="NG" data-lang="en" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇳🇬</span>
+        <span class="country-name">Nigeria</span>
+      </button>
+      <button class="country-card" data-country="SE" data-lang="sv" onclick="loadCountryFilms(this)">
+        <span class="country-flag">🇸🇪</span>
+        <span class="country-name">Sweden</span>
+      </button>
+    </div>
+    <div id="cinemapResults" class="cinemap-results hidden">
+      <div class="cinemap-results-header">
+        <h2 id="cinemapCountryTitle">Films from ...</h2>
+        <button onclick="closeCinemapResults()">✕ Close</button>
+      </div>
+      <div class="movie-grid" id="cinemapGrid"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="section-mood">
+  <div class="content-area">
+    <div class="page-header">
+      <h1>🎭 Mood Discovery</h1>
+      <p>What kind of film do you feel like tonight?</p>
+    </div>
+    <div class="mood-grid">
+      <button class="mood-card" data-mood="happy" onclick="loadMoodFilms('happy',this)">
+        <span class="mood-icon">😄</span>
+        <span class="mood-name">Happy Vibes</span>
+        <span class="mood-desc">Feel-good comedies &amp; uplifting stories</span>
+      </button>
+      <button class="mood-card" data-mood="horror" onclick="loadMoodFilms('horror',this)">
+        <span class="mood-icon">👻</span>
+        <span class="mood-name">Horror Night</span>
+        <span class="mood-desc">Thrillers, horrors &amp; chilling suspense</span>
+      </button>
+      <button class="mood-card" data-mood="mindblow" onclick="loadMoodFilms('mindblow',this)">
+        <span class="mood-icon">🤯</span>
+        <span class="mood-name">Mind-Blowing</span>
+        <span class="mood-desc">Twists, mysteries &amp; reality-benders</span>
+      </button>
+      <button class="mood-card" data-mood="romance" onclick="loadMoodFilms('romance',this)">
+        <span class="mood-icon">💕</span>
+        <span class="mood-name">Romance</span>
+        <span class="mood-desc">Love stories &amp; heartfelt dramas</span>
+      </button>
+      <button class="mood-card" data-mood="adventure" onclick="loadMoodFilms('adventure',this)">
+        <span class="mood-icon">🌍</span>
+        <span class="mood-name">Adventure</span>
+        <span class="mood-desc">Epic journeys &amp; action-packed rides</span>
+      </button>
+      <button class="mood-card" data-mood="scifi" onclick="loadMoodFilms('scifi',this)">
+        <span class="mood-icon">🚀</span>
+        <span class="mood-name">Sci-Fi</span>
+        <span class="mood-desc">Futuristic worlds &amp; space exploration</span>
+      </button>
+      <button class="mood-card" data-mood="family" onclick="loadMoodFilms('family',this)">
+        <span class="mood-icon">👨‍👩‍👧</span>
+        <span class="mood-name">Family Night</span>
+        <span class="mood-desc">Movies everyone can enjoy together</span>
+      </button>
+      <button class="mood-card" data-mood="documentary" onclick="loadMoodFilms('documentary',this)">
+        <span class="mood-icon">📽️</span>
+        <span class="mood-name">Documentaries</span>
+        <span class="mood-desc">Real stories that inspire and inform</span>
+      </button>
+    </div>
+    <div id="moodResults" class="mood-results hidden">
+      <div class="mood-results-header">
+        <h2 id="moodResultsTitle">Films for your mood</h2>
+        <button onclick="closeMoodResults()">✕ Close</button>
+      </div>
+      <div class="movie-grid" id="moodGrid"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="section-timeline">
+  <div class="content-area">
+    <div class="page-header">
+      <h1>⏳ Movie Timeline</h1>
+      <p>Browse cinema decade by decade from the 1920s to today</p>
+    </div>
+    <div class="timeline-decades">
+      <button class="decade-btn" data-decade="1920" onclick="loadDecade(1920,this)">1920s</button>
+      <button class="decade-btn" data-decade="1930" onclick="loadDecade(1930,this)">1930s</button>
+      <button class="decade-btn" data-decade="1940" onclick="loadDecade(1940,this)">1940s</button>
+      <button class="decade-btn" data-decade="1950" onclick="loadDecade(1950,this)">1950s</button>
+      <button class="decade-btn" data-decade="1960" onclick="loadDecade(1960,this)">1960s</button>
+      <button class="decade-btn" data-decade="1970" onclick="loadDecade(1970,this)">1970s</button>
+      <button class="decade-btn" data-decade="1980" onclick="loadDecade(1980,this)">1980s</button>
+      <button class="decade-btn" data-decade="1990" onclick="loadDecade(1990,this)">1990s</button>
+      <button class="decade-btn" data-decade="2000" onclick="loadDecade(2000,this)">2000s</button>
+      <button class="decade-btn active" data-decade="2010" onclick="loadDecade(2010,this)">2010s</button>
+      <button class="decade-btn" data-decade="2020" onclick="loadDecade(2020,this)">2020s</button>
+    </div>
+    <div class="timeline-info" id="timelineInfo">
+      <p class="timeline-era-desc" id="timelineEraDesc"></p>
+    </div>
+    <div class="movie-grid" id="timelineGrid"></div>
+    <div class="load-more-wrap">
+      <button class="btn-load-more" id="timelineLoadMore" onclick="loadMoreTimeline()">Load More</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="section-battle">
+  <div class="content-area">
+    <div class="page-header">
+      <h1>⚔️ Movie Battle</h1>
+      <p>Compare any two movies side-by-side</p>
+    </div>
+    <div class="battle-search-row">
+      <div class="battle-search-group">
+        <label>Movie 1</label>
+        <div class="battle-search-wrap">
+          <input type="text" id="battleSearch1" placeholder="Search first movie..." oninput="battleSearchDebounce(1)" />
+          <div class="battle-dropdown" id="battleDropdown1"></div>
+        </div>
+      </div>
+      <div class="battle-vs">VS</div>
+      <div class="battle-search-group">
+        <label>Movie 2</label>
+        <div class="battle-search-wrap">
+          <input type="text" id="battleSearch2" placeholder="Search second movie..." oninput="battleSearchDebounce(2)" />
+          <div class="battle-dropdown" id="battleDropdown2"></div>
+        </div>
+      </div>
+    </div>
+    <div class="battle-arena" id="battleArena">
+      <div class="battle-placeholder">
+        <p>🎬 Search and select two movies above to start the battle!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="section-watchlist">
+  <div class="content-area">
+    <div class="page-header">
+      <h1>📚 My Watchlist</h1>
+      <p>Your personal movie collections</p>
+    </div>
+    <div class="watchlist-controls">
+      <div class="collection-tabs" id="collectionTabs">
+        <button class="ctab active" data-col="watchlist" onclick="switchCollection('watchlist',this)">⏳ Want to Watch</button>
+        <button class="ctab" data-col="watching" onclick="switchCollection('watching',this)">▶️ Watching</button>
+        <button class="ctab" data-col="watched" onclick="switchCollection('watched',this)">✅ Watched</button>
+        <button class="ctab" data-col="favorites" onclick="switchCollection('favorites',this)">❤️ Favorites</button>
+      </div>
+      <button class="btn-clear" onclick="clearCollection()">Clear List</button>
+    </div>
+    <div class="watchlist-stats" id="watchlistStats"></div>
+    <div class="movie-grid" id="watchlistGrid">
+      <div class="watchlist-empty" id="watchlistEmpty">
+        <p>🎬 No movies here yet.</p>
+        <p>Browse movies and click <strong>+ Watchlist</strong> to add them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="movie-modal-overlay" id="movieModalOverlay" onclick="closeMovieModalIfBackdrop(event)">
+  <div class="movie-modal" id="movieModal">
+    <button class="modal-close" onclick="closeMovieModal()">✕</button>
+    <div class="modal-hero" id="modalHero"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="trailer-overlay" id="trailerOverlay" onclick="closeTrailerIfBackdrop(event)">
+  <div class="trailer-modal">
+    <button class="trailer-close" onclick="closeTrailer()">✕</button>
+    <div class="trailer-wrap">
+      <iframe id="trailerFrame" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="dna-overlay" id="dnaOverlay" onclick="closeDNAIfBackdrop(event)">
+  <div class="dna-modal" id="dnaModal">
+    <button class="modal-close" onclick="closeDNA()">✕</button>
+    <div id="dnaContent"></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
