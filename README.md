@@ -75,8 +75,8 @@ Follow these explicit installation coordinates to clone and run the project loca
 ## 👤 Author
 
 * **Adhith Raghunath Nair** 
-  * GitHub: [@your-username]adhithraghunath006-stack
-  * LinkedIn: [Your Profile]https://www.linkedin.com/in/adhith-raghunath-9a165332a/
+  * GitHub: @adhithraghunath006-stack
+  * LinkedIn: https://www.linkedin.com/in/adhith-raghunath-9a165332a/
 
 
 ### Execution Roadmap
