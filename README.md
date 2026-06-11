@@ -71,6 +71,14 @@ Follow these explicit installation coordinates to clone and run the project loca
 * XAMPP Server Installation (PHP 8.2+ Setup Environment)
 * Local MySQL Client Engine Active
 
+
+## 👤 Author
+
+* **Adhith Raghunath Nair** 
+  * GitHub: [@your-username]adhithraghunath006-stack
+  * LinkedIn: [Your Profile]https://www.linkedin.com/in/adhith-raghunath-9a165332a/
+
+
 ### Execution Roadmap
 
 1. **Clone the Repository Structure**
